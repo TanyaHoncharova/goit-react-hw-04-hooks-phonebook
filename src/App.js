@@ -1,44 +1,24 @@
-import React, { Component } from 'react';
+import  { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import shortid from 'shortid';
+import useLocalStorage from './hooks/useLocalStorege';
 import './App.css';
 
 import ContactForm from './Components/ContactForm';
 import ContactList from './Components/ContactList';
 import Filter from './Components/Filter';
 
-class App extends Component {
-    static defaultProps = {
-    totalContactsCount: null,
-    visibleContacts: null,
-  }
-  static propTypes = {
-    contacts: PropTypes.arrayOf(
-      PropTypes.shape(
-        {
-          id: PropTypes.any.isRequired,
-          name: PropTypes.string.isRequired,
-          number: PropTypes.string.isRequired,
-        })
-    ),
-    filter: PropTypes.string,
-    totalContactsCount: PropTypes.number,
-    visibleContacts: PropTypes.number,
-  };
-  state = {
-    contacts: [
-      {id: 'id-1', name: 'Margo Robins', number: '093-144-15-14'},
-      {id: 'id-2', name: 'Damon Crunk', number: '095-111-12-23'},
-      {id: 'id-3', name: 'Paulo Swit ', number: '078-137-22-79'},
-      {id: 'id-4', name: 'Mango Candy', number: '050-932-15-26'},
-    ],
-    filter: '',
-  };
 
-  addContact = (name, number) => {
- 
-    if (this.state.contacts.find((contact) => name.toLowerCase() === contact.name.toLocaleLowerCase()))
-    {
+export default function App() {
+  const [contacts, setContacts] = useLocalStorage('contacts', []);
+  const [filter, setFilter] = useLocalStorage('filter', '');
+
+  const deleteContact = ((contactId) => {
+    setContacts(prev => prev.filter(contact => contact.id !== contactId))
+  });
+
+  const addContact = (name, number) => {
+    if (contacts.find((contact) => name.toLowerCase() === contact.name.toLocaleLowerCase())) {
       alert(`${name} is already in contacts.`); return;
     } else if (name && number) {
       const contact = {
@@ -46,42 +26,62 @@ class App extends Component {
         name,
         number,
       };
-      this.setState(prevState => ({
-        contacts: [contact, ...prevState.contacts],
-      }));
+      setContacts((prev) =>[...prev, contact])
     } else {
-      alert (`Please enter a name for contact ${name}!`)
+      alert(`Please enter a name for contact ${name}!`)
     }
   };
 
-  deleteContact = (contactId => {
-    this.setState( prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId)}))
+  const changeFilter = event => {
+    setFilter(event.currentTarget.value);
+
+  };
+
+  const totalContactsCount = contacts.length;
+  
+  const normalizedFilter = filter.toLowerCase();
+  const visibleContacts = (contacts) => {
+    if (contacts.length > 0) {
+      contacts.filter(contact => contact.name.toLowerCase().includes(normalizedFilter));
+    } else {
+      return 0;
     }
-  );
+  };
+  
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-  changeFilter = event => {
-    this.setState({ filter: event.currentTarget.value })
-  }
-
-  render() {
-    const { contacts, filter } = this.state;
-    const totalContactsCount = contacts.length;
-
-    const normalizedFilter = filter.toLowerCase();
-    const visibleContacts = contacts.filter(contact => contact.name.toLowerCase().includes(normalizedFilter));
-
-    return (
-      <div className="App">
+  return (
+         <div className="App">
         <h1>Phonebook</h1>
-        <ContactForm contacts={contacts} onAddContact={this.addContact} />
+        <ContactForm contacts={contacts} onAddContact={addContact} />
 
         <h2>Contacts (total: {totalContactsCount}) </h2>
-        <Filter value={filter} onChange={this.changeFilter}/>
-        <ContactList contacts={visibleContacts} onDeleteContact={this.deleteContact} />
-      </div>        
+        <Filter value={filter} onChange={changeFilter}/>
+        <ContactList contacts={visibleContacts} onDeleteContact={deleteContact} />
+      </div>
     );
-  }  
+
 }
 
-export default App;
+
+App.defaultProps = {
+  totalContactsCount: null,
+  visibleContactsCount: null
+}
+App.propTypes = {
+    contacts: PropTypes.arrayOf(
+      PropTypes.shape(
+        {
+          id: PropTypes.any.isRequired,
+          name: PropTypes.string.isRequired,
+          number: PropTypes.number.isRequired,
+        })
+    ),
+    filter: PropTypes.string,
+    totalContactsCount: PropTypes.number,
+    visibleContacts: PropTypes.number,
+};
+  
+
