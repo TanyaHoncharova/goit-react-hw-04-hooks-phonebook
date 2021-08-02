@@ -1,68 +1,82 @@
-import  { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+ 
 import PropTypes from 'prop-types';
 import shortid from 'shortid';
-import useLocalStorage from './hooks/useLocalStorege';
-import './App.css';
 
+import './App.css';
+import Title from './Components/Title';
 import ContactForm from './Components/ContactForm';
 import ContactList from './Components/ContactList';
 import Filter from './Components/Filter';
 
 
 export default function App() {
-  const [contacts, setContacts] = useLocalStorage('contacts', []);
-  const [filter, setFilter] = useLocalStorage('filter', '');
+  const [contacts, setContacts] = useState(()=>{
+    return JSON.parse(window.localStorage.getItem('contacts')) ?? ''
+  })
 
-  const deleteContact = ((contactId) => {
-    setContacts(prev => prev.filter(contact => contact.id !== contactId))
-  });
+  const [filter, setFilter] = useState('');
 
+ useEffect(()=>{
+    window.localStorage.setItem('contacts',JSON.stringify(contacts))
+  },[contacts])
+
+
+  
   const addContact = (name, number) => {
-    if (contacts.find((contact) => name.toLowerCase() === contact.name.toLocaleLowerCase())) {
-      alert(`${name} is already in contacts.`); return;
-    } else if (name && number) {
-      const contact = {
-        id: shortid.generate(),
-        name,
-        number,
-      };
-      setContacts((prev) =>[...prev, contact])
-    } else {
-      alert(`Please enter a name for contact ${name}!`)
-    }
-  };
-
-  const changeFilter = event => {
-    setFilter(event.currentTarget.value);
-
-  };
-
-  const totalContactsCount = contacts.length;
-  
-  const normalizedFilter = filter.toLowerCase();
-  const visibleContacts = (contacts) => {
-    if (contacts.length > 0) {
-      contacts.filter(contact => contact.name.toLowerCase().includes(normalizedFilter));
-    } else {
-      return 0;
-    }
+    const contact = {
+      id: shortid.generate(),
+      name,
+      number,
+    };
+    setContacts((prev) => { return [...prev, contact] });
+    
   };
   
-  useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts]);
+
+  
+  const deleteContact = e => {
+    const contactId = e.currentTarget.id;
+    setContacts(contacts.filter(contact => contact.id !== contactId));
+     setFilter('');
+  };
+  
+  const changeFilter = e => {
+    setFilter(e.currentTarget.value);
+
+  };
+
+  
+  const getVisibleContact = () =>  {
+    if (!contacts) return
+
+    const normalizedFilter = filter.toLowerCase();
+   return  contacts.filter(({name})=> name.toLowerCase().includes(normalizedFilter))
+  };
+  
+  const  handleCoincidence = currentName => {
+    if (!contacts) return
+
+    if (contacts.find(({ name }) => name.toLowerCase() === currentName)) {
+      alert(`${currentName} is already in contacts`);
+      return true;
+    }
+  };
+  const visibleContacts = getVisibleContact();
+  
 
   return (
-         <div className="App">
-        <h1>Phonebook</h1>
-        <ContactForm contacts={contacts} onAddContact={addContact} />
-
-        <h2>Contacts (total: {totalContactsCount}) </h2>
-        <Filter value={filter} onChange={changeFilter}/>
-        <ContactList contacts={visibleContacts} onDeleteContact={deleteContact} />
-      </div>
-    );
-
+    <div className="App">
+     <Title>Phonebook</Title>
+      <ContactForm contacts={contacts} onSubmit={addContact} coincidence={handleCoincidence} />
+      <Filter value={filter} onChange={changeFilter} />
+      
+      {visibleContacts.length !== 0 ? (
+        <ContactList contacts={visibleContacts} onDeleteContact={deleteContact} />) : (
+        <h3>No contact</h3>
+      )}
+    </div>
+  );
 }
 
 

@@ -1,15 +1,14 @@
 .list {
     width: 500px;
-    
+    list-style: none;
 }
 .item {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-around;
     padding: 5px;
     border: 1px solid rgb(143, 146, 188);
-    list-style:disc;
+
     margin: 2px;
 }
 .name {
@@ -22,3 +21,4 @@
     border: 1px solid rgb(170, 143, 188);
     border-radius: 5px;
 }
+
