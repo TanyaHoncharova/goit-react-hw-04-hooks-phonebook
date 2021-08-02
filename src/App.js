@@ -55,7 +55,7 @@ export default function App() {
   };
   
   const  handleCoincidence = currentName => {
-    if (!contacts) return
+    if (!contacts) {return []}
 
     if (contacts.find(({ name }) => name.toLowerCase() === currentName)) {
       alert(`${currentName} is already in contacts`);
