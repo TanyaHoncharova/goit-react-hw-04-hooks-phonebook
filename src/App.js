@@ -48,14 +48,14 @@ export default function App() {
 
   
   const getVisibleContact = () =>  {
-    if (!contacts) return
+    if (!contacts) return []
 
     const normalizedFilter = filter.toLowerCase();
    return  contacts.filter(({name})=> name.toLowerCase().includes(normalizedFilter))
   };
   
   const  handleCoincidence = currentName => {
-    if (!contacts) {return []}
+    if (!contacts) {return [ ]}
 
     if (contacts.find(({ name }) => name.toLowerCase() === currentName)) {
       alert(`${currentName} is already in contacts`);
@@ -71,7 +71,7 @@ export default function App() {
       <ContactForm contacts={contacts} onSubmit={addContact} coincidence={handleCoincidence} />
       <Filter value={filter} onChange={changeFilter} />
       
-      {visibleContacts.length !== 0 ? (
+      {visibleContacts !== 0 ? (
         <ContactList contacts={visibleContacts} onDeleteContact={deleteContact} />) : (
         <h3>No contact</h3>
       )}
