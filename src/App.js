@@ -12,7 +12,7 @@ import Filter from './Components/Filter';
 
 export default function App() {
   const [contacts, setContacts] = useState(()=>{
-    return JSON.parse(window.localStorage.getItem('contacts')) ?? ''
+    return JSON.parse(window.localStorage.getItem('contacts')) ?? []
   })
 
   const [filter, setFilter] = useState('');
@@ -24,6 +24,10 @@ export default function App() {
 
   
   const addContact = (name, number) => {
+    // if (handleCoincidence(name.toLowerCase())) {
+    //   return
+    // };
+
     const contact = {
       id: shortid.generate(),
       name,
@@ -56,7 +60,7 @@ export default function App() {
   };
   
   const  handleCoincidence = currentName => {
-    if (!contacts) {return [ ]}
+    if (!contacts) {return }
 
     if (contacts.find(({ name }) => name.toLowerCase() === currentName)) {
       alert(`${currentName} is already in contacts`);
