@@ -29,6 +29,7 @@ export default function App() {
       name,
       number,
     };
+    console.log(contact);
     setContacts((prev) => { return [...prev, contact] });
     
   };
